@@ -22,14 +22,23 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        // ✅ Singleton
         if (Instance == null)
+        {
             Instance = this;
+        }
         else
+        {
             Destroy(gameObject);
+            return;
+        }
     }
 
     private void Start()
     {
+        // 🔥 โหลดค่า
+        LoadData();
+
         UpdateCollectUI();
 
         if (winPanel != null)
@@ -39,11 +48,19 @@ public class GameManager : MonoBehaviour
             gameOverPanel.SetActive(false);
     }
 
+    // =========================
+    // COLLECT
+    // =========================
+
     public void CollectItem()
     {
         if (gameEnded) return;
 
         collectedCount++;
+
+        // 🔥 save
+        SaveData();
+
         UpdateCollectUI();
 
         if (enemy != null)
@@ -57,17 +74,23 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void UpdateCollectUI()
+    void UpdateCollectUI()
     {
         if (collectText != null)
         {
-            collectText.text = collectedCount + " / " + totalCollectibles;
+            collectText.text =
+                collectedCount + " / " + totalCollectibles;
         }
     }
+
+    // =========================
+    // WIN
+    // =========================
 
     public void WinGame()
     {
         if (gameEnded) return;
+
         gameEnded = true;
 
         if (winPanel != null)
@@ -76,9 +99,14 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0f;
     }
 
+    // =========================
+    // GAME OVER
+    // =========================
+
     public void GameOver()
     {
         if (gameEnded) return;
+
         gameEnded = true;
 
         if (gameOverPanel != null)
@@ -87,16 +115,51 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0f;
     }
 
+    // =========================
+    // RESTART
+    // =========================
+
     public void RestartGame()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+
+        // 🔥 ล้างค่า spawn ตอนรีเกม
+        PlayerPrefs.DeleteKey("SpawnPoint");
+        PlayerPrefs.DeleteKey("CollectedCount");
+        PlayerPrefs.DeleteKey("PlayerHealth");
+
+        PlayerPrefs.DeleteKey("Item_1");
+        PlayerPrefs.DeleteKey("Item_2");
+        PlayerPrefs.DeleteKey("Item_3");
+        PlayerPrefs.DeleteKey("Item_4");
+        PlayerPrefs.DeleteKey("Item_5");
+
+        SceneManager.LoadScene(
+            SceneManager.GetActiveScene().buildIndex
+        );
     }
+
+    // =========================
+    // QUIT
+    // =========================
+
     public void QuitGame()
-{
-    Debug.Log("Quit Game");
+    {
+        Debug.Log("Quit Game");
 
-    Application.Quit();
-}
+        Application.Quit();
+    }
+    void SaveData()
+    {
+        PlayerPrefs.SetInt(
+            "CollectedCount",
+            collectedCount
+        );
+    }
 
+    void LoadData()
+    {
+        collectedCount =
+            PlayerPrefs.GetInt("CollectedCount", 0);
+    }
 }
